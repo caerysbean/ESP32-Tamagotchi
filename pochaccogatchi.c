@@ -158,9 +158,9 @@ void setup() {
   Serial.begin(115200);
   display.setTextSize(1);      
   display.setTextColor(WHITE);
-  pinMode(4, INPUT);
-  pinMode(5, INPUT);
-  pinMode(16, INPUT);
+  pinMode(4, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
+  pinMode(16, INPUT_PULLUP);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(("SSD1306 allocation failed"));
@@ -185,7 +185,7 @@ bool buttonPress = digitalRead(4);
       display.clearDisplay();
       display.drawBitmap(0, 0, eggArray, 128, 64, 1);
         display.display();
-      if (buttonPress == HIGH && lastButtonState == LOW) {
+      if (buttonPress == LOW && lastButtonState == HIGH) {
            eggClicks++;
            if (eggClicks >= 5){
              currentState = HATCHING;
@@ -210,4 +210,5 @@ bool buttonPress = digitalRead(4);
     lastButtonState = buttonPress; // Update the state for the next loop
     display.display(); // Push everything to the OLED
 }
+
 
