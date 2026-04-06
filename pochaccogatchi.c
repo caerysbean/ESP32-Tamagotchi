@@ -171,6 +171,7 @@ void setup() {
 
   //display.drawBitmap(0, 0, image_data_Pochaccoarray, 128, 64, 1);
   //display.display();
+	//display.println("IT'S AN EGG!");
 }
 
 void loop() {
@@ -180,8 +181,8 @@ bool buttonPress = digitalRead(4);
   switch(currentState){
      case EGG:
       display.setCursor(20, 20);
-      display.println("IT'S AN EGG!");
-      delay(50);
+      //display.println("IT'S AN EGG!");
+      //delay(50);
       display.clearDisplay();
       display.drawBitmap(0, 0, eggArray, 128, 64, 1);
         display.display();
