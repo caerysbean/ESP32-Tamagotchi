@@ -1,5 +1,7 @@
-# ESP32-Tamagotchi
+# ESP32-Tamagotchi 
 ESP32 Tamagotchi Pet
+
+Pochaccogatchi
 
 This project recreates the Tamagotchi toy using an ESP32 on an Altium PCB. The Tamagotchi toy should have these functions: 
 Upon initially activating the Tamagotchi, an egg will appear on screen which hatches into a pet. 
