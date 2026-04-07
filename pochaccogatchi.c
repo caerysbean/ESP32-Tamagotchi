@@ -1,4 +1,8 @@
 #include <Wire.h>
+#include <Arduino.h>
+#include <WiFi.h>
+#include "time.h"
+#include "esp_sntp.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -7,6 +11,50 @@
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+//Declare global variable for the time information struct 
+struct tm timeinfo;
+
+const char *ssid = "YOUR_SSID";
+const char *password = "YOUR_PASSWORD";
+
+const char *ntpServer1 = "pool.ntp.org";
+const char *ntpServer2 = "time.nist.gov";
+const long gmtOffset_sec = -28800;    // UTC-8 (PST)
+const int daylightOffset_sec = 3600;  // DST for California
+
+
+void printLocalTime() {
+  //struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("No time available (yet)");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
+// Callback function (gets called when time adjusts via NTP)
+void timeavailable(struct timeval *t) {
+  Serial.println("Got time adjustment from NTP!");
+  printLocalTime();
+}
+
+void syncTime(){
+  WiFi.begin(ssid,password);
+  while (WiFi.status() != WL_CONNECTED){
+    delay(500);
+  }
+  configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org");
+
+  //Wait for time to sync
+  //struct tm timeinfo;
+  while(!getLocalTime(&timeinfo)) {
+    delay(500);
+  }
+  //Finish and turn off WiFi
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+}
 
 static const uint8_t image_data_Pochaccoarray[1024] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -169,9 +217,8 @@ void setup() {
   delay(2000);
   display.clearDisplay();
 
-  //display.drawBitmap(0, 0, image_data_Pochaccoarray, 128, 64, 1);
-  //display.display();
-	//display.println("IT'S AN EGG!");
+  syncTime();
+
 }
 
 void loop() {
@@ -183,6 +230,7 @@ bool buttonPress = digitalRead(4);
       display.setCursor(20, 20);
       //display.println("IT'S AN EGG!");
       //delay(50);
+      //Issues here with delay
       display.clearDisplay();
       display.drawBitmap(0, 0, eggArray, 128, 64, 1);
         display.display();
@@ -211,5 +259,3 @@ bool buttonPress = digitalRead(4);
     lastButtonState = buttonPress; // Update the state for the next loop
     display.display(); // Push everything to the OLED
 }
-
-
