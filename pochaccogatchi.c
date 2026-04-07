@@ -237,7 +237,7 @@ void setup() {
 }
 
 void loop() {
-bool buttonPress = digitalRead(4);
+bool buttonPress = digitalRead(25);
 
 //EGG to POCHACCO pipeline
   switch(currentState){
@@ -273,4 +273,17 @@ bool buttonPress = digitalRead(4);
   }
     lastButtonState = buttonPress; // Update the state for the next loop
     display.display(); // Push everything to the OLED
+
+    //If the player presses button 2, the time should display
+    if(digitalRead(26) == LOW){
+      display.clearDisplay();
+      display.setCursor(15,20);
+      getLocalTime(&timeinfo);
+      display.printf("%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+      display.display();
+
+      while (digitalRead(26) == LOW) {
+      delay(50);  // hold the time display until button is released
+    }
+    }
 }
