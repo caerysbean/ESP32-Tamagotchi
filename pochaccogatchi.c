@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include "time.h"
-#include "esp_sntp.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
@@ -15,30 +14,25 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 //Declare global variable for the time information struct 
 struct tm timeinfo;
 
-const char *ssid = "YOUR_SSID";
-const char *password = "YOUR_PASSWORD";
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
-const char *ntpServer1 = "pool.ntp.org";
-const char *ntpServer2 = "time.nist.gov";
+const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = -28800;    // UTC-8 (PST)
 const int daylightOffset_sec = 3600;  // DST for California
 
-
+/*
 void printLocalTime() {
   //struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
-    Serial.println("No time available (yet)");
+    Serial.println("Failed to obtain time");
     return;
   }
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
+  */
 
-// Callback function (gets called when time adjusts via NTP)
-void timeavailable(struct timeval *t) {
-  Serial.println("Got time adjustment from NTP!");
-  printLocalTime();
-}
-
+/*
 void syncTime(){
   WiFi.begin(ssid,password);
   while (WiFi.status() != WL_CONNECTED){
@@ -55,6 +49,7 @@ void syncTime(){
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
 }
+*/
 
 static const uint8_t image_data_Pochaccoarray[1024] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -206,9 +201,9 @@ void setup() {
   Serial.begin(115200);
   display.setTextSize(1);      
   display.setTextColor(WHITE);
-  pinMode(4, INPUT_PULLUP);
-  pinMode(5, INPUT_PULLUP);
-  pinMode(16, INPUT_PULLUP);
+  pinMode(25, INPUT_PULLUP);
+  pinMode(26, INPUT_PULLUP);
+  pinMode(27, INPUT_PULLUP);
 
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(("SSD1306 allocation failed"));
@@ -217,7 +212,27 @@ void setup() {
   delay(2000);
   display.clearDisplay();
 
-  syncTime();
+  //Time schtuff with Wifi
+  Serial.print("Connecting to...");
+  Serial.println(ssid);
+  WiFi.begin(ssid,password);
+  while(WiFi.status() != WL_CONNECTED){
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected.");
+
+  configTime(gmtOffset_sec,daylightOffset_sec, ntpServer);
+  // Wait for sync
+  while (!getLocalTime(&timeinfo)) {
+      delay(500);
+    }
+      Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S"); // confirm sync
+
+  //Yoink the WiFi, we don't need it anymore
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
 
 }
 
